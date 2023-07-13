@@ -59,7 +59,6 @@ def get_background(grid_size,vmin,vmax):
     V = np.empty((grid_size, grid_size, grid_size))
     b = (vmax-vmin)
     z = np.linspace(0,1,grid_size)
-
     for n in range(z.size):
         z = np.linspace(0,1,grid_size)
         V[:, :, n] = vmin + b*z[n]
@@ -171,13 +170,7 @@ class get_latent(object):
     def scale_z_inv(self,z):
         rez= (z*(np.max(self.z_matrix,axis=0)-np.min(self.z_matrix,axis=0))+np.min(self.z_matrix,axis=0)).copy()
         return rez    
-            
         
-        
-
-
-import multiprocessing
-
 def compute_task(inputs):
     V_,loc_src_coord,n_station=inputs
     result = get_traveling_time(V_, loc_src_coord).reshape(n_station,-1).astype(dtype=np.float16)
@@ -185,8 +178,8 @@ def compute_task(inputs):
     
 
 
-class traveling_time_dataset(Dataset):
-    def __init__(self,WaveSpeedData,z_matrix_scale,z_matrix_test_scale,n_station,grid_size,loc_src_index=None):
+class TravelTimeDataset(Dataset):
+    def __init__(self,WaveSpeedData,z_matrix_scale,z_matrix_test_scale,n_station,grid_size,loc_station_index=None):
         self.z_matrix_scale=z_matrix_scale
         self.z_matrix_test_scale=z_matrix_test_scale
         self.n_wavespeed=WaveSpeedData.n_wavespeed
@@ -196,11 +189,11 @@ class traveling_time_dataset(Dataset):
         self.n_gt=grid_size**3
         self.n_station=n_station
         ##station
-        if loc_src_index==None:
-            loc_src_index=np.random.randint(grid_size,size=[n_station,3])
-            loc_src_index[:,2]=0 #only on the surface
-        self.loc_src_index=loc_src_index
-        self.loc_src_coord = loc_src_index/(grid_size-1)
+        if loc_station_index==None:
+            loc_station_index=np.random.randint(grid_size,size=[n_station,3])
+            loc_station_index[:,2]=0 #only on the surface
+        self.loc_station_index=loc_station_index
+        self.loc_station_coord = loc_station_index/(grid_size-1)
         
         ##mesh
         x = np.linspace(0,1,grid_size)
@@ -210,7 +203,7 @@ class traveling_time_dataset(Dataset):
         self.set_coord=np.vstack([X.reshape(-1),Y.reshape(-1),Z.reshape(-1)]).T
         self.data=np.zeros((self.n_wavespeed,n_station,grid_size**3),dtype=np.float16)
         self.data_test=np.zeros((self.n_wavespeed_test,n_station,grid_size**3),dtype=np.float16)
-        data = [(self.data_wavespeed[i], self.loc_src_coord,n_station) for i in range(self.n_wavespeed)]
+        data = [(self.data_wavespeed[i], self.loc_station_coord,n_station) for i in range(self.n_wavespeed)]
         pool = multiprocessing.Pool()
         result_iter = pool.imap(compute_task, data)
         result_list = []
@@ -222,7 +215,7 @@ class traveling_time_dataset(Dataset):
         pool.join()
         self.data=np.array(result_list).astype(np.float16)
         del result_list
-        data = [(self.data_wavespeed_test[i], self.loc_src_coord,n_station) for i in range(self.n_wavespeed_test)]
+        data = [(self.data_wavespeed_test[i], self.loc_station_coord,n_station) for i in range(self.n_wavespeed_test)]
         pool = multiprocessing.Pool()
         result_iter = pool.imap(compute_task, data)
         result_list = []
@@ -244,16 +237,16 @@ class traveling_time_dataset(Dataset):
         return image
     def output_idx(self, i):
         V_=self.data_wavespeed[i]
-        output=get_traveling_time(V_,self.loc_src_coord).reshape(self.n_station,-1)
+        output=get_traveling_time(V_,self.loc_station_coord).reshape(self.n_station,-1)
         image = {'z':self.z_matrix_scale[i],'out':output}
         return image
     def output_test(self, i):
         V_=self.data_wavespeed_test[i]
-        output=get_traveling_time(V_,self.loc_src_coord).reshape(self.n_station,-1)
+        output=get_traveling_time(V_,self.loc_station_coord).reshape(self.n_station,-1)
         image = {'z':self.z_matrix_test_scale[i],'out':output}
         return image
     def output_V(self, V):
-        output=get_traveling_time(V,self.loc_src_coord).reshape(self.n_station,-1)
+        output=get_traveling_time(V,self.loc_station_coord).reshape(self.n_station,-1)
         image = {'out':output}
         return image
     
@@ -270,15 +263,14 @@ class RepeatDataset(Dataset):
         return self.dataset[idx % len(self.dataset)]
     
 
-class traveling_time_dataset_fix_wavespeed(Dataset):
-    def __init__(self, V,n_station,grid_size,loc_src_index=None):
-        if loc_src_index==None:
-            loc_src_index=np.random.randint(grid_size,size=[n_station,3])
-            loc_src_index[:,2]=0
-        self.loc_src_index=loc_src_index
-        self.loc_src_coord = loc_src_index/(grid_size-1)
-        #self.travel_time=get_full_tt(V,self.loc_src_coord).reshape(n_station,-1)
-        self.travel_time=get_traveling_time(V,self.loc_src_coord).reshape(n_station,-1)
+class TravelTimeDatasetFixedWavespeed(Dataset):
+    def __init__(self, V,n_station,grid_size,loc_station_index=None):
+        if loc_station_index is None:
+            loc_station_index=np.random.randint(grid_size,size=[n_station,3])
+            loc_station_index[:,2]=0
+        self.loc_station_index=loc_station_index
+        self.loc_station_coord = self.loc_station_index/(grid_size-1)
+        self.travel_time=get_traveling_time(V,self.loc_station_coord).reshape(n_station,-1)
         x = np.linspace(0,1,grid_size)
         y = np.linspace(0,1,grid_size)
         z = np.linspace(0,1,grid_size)

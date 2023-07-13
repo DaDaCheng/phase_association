@@ -9,28 +9,16 @@ import copy
 import time
 
 
-
+### SIREN is edited from paper Implicit Neural Representations with Periodic Activation Functions, https://github.com/vsitzmann/siren
 class SineLayer(nn.Module):
-    # See paper sec. 3.2, final paragraph, and supplement Sec. 1.5 for discussion of omega_0.
-    
-    # If is_first=True, omega_0 is a frequency factor which simply multiplies the activations before the 
-    # nonlinearity. Different signals may require different omega_0 in the first layer - this is a 
-    # hyperparameter.
-    
-    # If is_first=False, then the weights will be divided by omega_0 so as to keep the magnitude of 
-    # activations constant, but boost gradients to the weight matrix (see supplement Sec. 1.5)
-    
     def __init__(self, in_features, out_features, bias=True,
                  is_first=False, omega_0=30):
         super().__init__()
         self.omega_0 = omega_0
         self.is_first = is_first
-        
         self.in_features = in_features
         self.linear = nn.Linear(in_features, out_features, bias=bias)
-        
         self.init_weights()
-    
     def init_weights(self):
         with torch.no_grad():
             if self.is_first:
@@ -47,8 +35,6 @@ class SineLayer(nn.Module):
         # For visualization of activation distributions
         intermediate = self.omega_0 * self.linear(input)
         return torch.sin(intermediate), intermediate
-    
-    
 class Siren(nn.Module):
     def __init__(self, in_features, hidden_features, hidden_layers, out_features, outermost_linear=False, 
                  first_omega_0=30, hidden_omega_0=30.):
@@ -119,6 +105,8 @@ def get_mgrid(sidelen, dim=2):
     return mgrid
 
 
+
+
 class MLP(nn.Module):
     def __init__(self, input_dim, hidden_dim,  output_dim,hiddenLayers = 1,batchnorm=True):
         super(MLP, self).__init__()
@@ -146,7 +134,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         c = capacity
         self.conv1 = nn.Conv3d(in_channels=1, out_channels=c, kernel_size=3, stride=2, padding=1)
-        self.bn1 = nn.BatchNorm3d(c)# out: c x 14 x 14
+        self.bn1 = nn.BatchNorm3d(c)# 
         self.conv2 = nn.Conv3d(in_channels=c, out_channels=c*2, kernel_size=3, stride=2, padding=1)
         self.bn2 = nn.BatchNorm3d(2*c)
         self.conv3 = nn.Conv3d(in_channels=c*2, out_channels=c*4, kernel_size=3, stride=2, padding=1)
@@ -156,7 +144,6 @@ class Encoder(nn.Module):
         self.bn4 = nn.BatchNorm1d(latent_dims)
         self.vmin=vmin
         self.vmax=vmax
-        #self.bn=nn.BatchNorm1d(latent_dims)
             
     def forward(self, x):
         x=(x-self.vmin)/(self.vmax-self.vmin)
@@ -166,15 +153,13 @@ class Encoder(nn.Module):
         x = F.relu(self.bn3(self.conv3(x)))
         x = x.view(x.size(0), -1) # flatten batch of multi-channel feature maps to a batch of feature vectors
         x = self.bn4(self.fc(x))
-        #x = self.bn(x)
-        #x= torch.sin(x)
         return x
 
 class Decoder(nn.Module):
-    def __init__(self,capacity=8,latent_dims=2,vmin=0.5,vmax=2.5):
+    def __init__(self,capacity=8,latent_dims=2,vmin=0.5,vmax=2.5,p=1):
         super(Decoder, self).__init__()
         c = capacity
-        self.fc = nn.Linear(in_features=latent_dims, out_features=4*c*4*4*4)
+        self.fc = nn.Linear(in_features=latent_dims*p, out_features=4*c*4*4*4)
         self.bn3 = nn.BatchNorm3d(4*c)
         self.conv3 = nn.ConvTranspose3d(in_channels=4*c, out_channels=2*c, kernel_size=4, stride=2, padding=1)
         self.bn2 = nn.BatchNorm3d(2*c)
@@ -185,15 +170,14 @@ class Decoder(nn.Module):
         self.vmax=vmax
         self.lkrelu=nn.LeakyReLU(negative_slope=0.1)
         self.L=latent_dims
+        self.p=p
     def forward(self, x):
-        #x=self.lkrelu(x)
-        x=x.repeat(1,10)
-        for i in range(10):
+        x=x.repeat(1,self.p)
+        for i in range(self.p):
             x[:,self.L*i:self.L*(i+1)]=x[:,self.L*i:self.L*(i+1)]*(i+1)
         x=torch.sin(x)
         x = self.fc(x)
         x = F.relu(self.bn3(x.view(x.size(0), -1, 4, 4,4)))
-        #print(x.shape)# unflatten batch of feature vectors to a batch of multi-channel feature maps
         x = F.relu(self.bn2(self.conv3(x)))
         x = F.relu(self.bn1(self.conv2(x)))
         x = self.conv1(x)
@@ -205,12 +189,12 @@ class Decoder(nn.Module):
 
     
 class Autoencoder(nn.Module):
-    def __init__(self,capacity=64,latent_dims=1,vmin=0.5,vmax=2.5):
+    def __init__(self,capacity=64,latent_dims=1,vmin=0.5,vmax=2.5,p=1):
         super(Autoencoder, self).__init__()
         self.encoder = Encoder(capacity=capacity,latent_dims=latent_dims,vmin=vmin,vmax=vmax)
-        self.decoder = Decoder(capacity=capacity,latent_dims=latent_dims*10,vmin=vmin,vmax=vmax)
+        self.decoder = Decoder(capacity=capacity,latent_dims=latent_dims,vmin=vmin,vmax=vmax,p=p)
+        # p is the number of repeat for the latent code.
     def forward(self, x):
-
         latent = self.encoder(x)
         x = self.decoder(latent)
         return x,latent
@@ -222,84 +206,13 @@ class Autoencoder(nn.Module):
 
 
 
-
-# class Encoder(nn.Module):
-#     def __init__(self,capacity=8,latent_dims=2,vmin=0.5,vmax=2.5):
-#         super(Encoder, self).__init__()
-#         c = capacity
-#         self.conv1 = nn.Conv3d(in_channels=1, out_channels=c, kernel_size=3, stride=2, padding=1)
-#         self.bn1 = nn.BatchNorm3d(c)# out: c x 14 x 14
-#         self.conv2 = nn.Conv3d(in_channels=c, out_channels=c*2, kernel_size=3, stride=2, padding=1)
-#         self.bn2 = nn.BatchNorm3d(2*c)
-#         self.conv3 = nn.Conv3d(in_channels=c*2, out_channels=c*4, kernel_size=3, stride=2, padding=1)
-#         self.bn3 = nn.BatchNorm3d(4*c)
-#         self.fc = nn.Linear(in_features=4*c*4*4*4, out_features=latent_dims)
-#         self.pool=nn.AvgPool3d(kernel_size=2, stride=2)
-#         self.bn4 = nn.BatchNorm1d(latent_dims)
-#         self.vmin=vmin
-#         self.vmax=vmax
-#         #self.bn=nn.BatchNorm1d(latent_dims)
-            
-#     def forward(self, x):
-#         x=(x-self.vmin)/(self.vmax-self.vmin)
-#         skip1=self.pool(self.pool(self.pool(x)))
-#         x = F.relu(self.bn1(self.conv1(x)))
-#         x = F.relu(self.bn2(self.conv2(x)))
-#         x = F.relu(self.bn3(self.conv3(x)))
-#         x = x.view(x.size(0), -1) # flatten batch of multi-channel feature maps to a batch of feature vectors
-#         x = self.bn4(self.fc(x))
-#         #x = self.bn(x)
-#         return x
-
-# class Decoder(nn.Module):
-#     def __init__(self,capacity=8,latent_dims=2,vmin=0.5,vmax=2.5):
-#         super(Decoder, self).__init__()
-#         c = capacity
-#         self.fc = nn.Linear(in_features=latent_dims, out_features=4*c*4*4*4)
-#         self.bn3 = nn.BatchNorm3d(4*c)
-#         self.conv3 = nn.ConvTranspose3d(in_channels=4*c, out_channels=2*c, kernel_size=4, stride=2, padding=1)
-#         self.bn2 = nn.BatchNorm3d(2*c)
-#         self.conv2 = nn.ConvTranspose3d(in_channels=2*c, out_channels=c, kernel_size=4, stride=2, padding=1)
-#         self.bn1 = nn.BatchNorm3d(c)
-#         self.conv1 = nn.ConvTranspose3d(in_channels=c, out_channels=1, kernel_size=4, stride=2, padding=1)
-#         self.vmin=vmin
-#         self.vmax=vmax
-#         self.lkrelu=nn.LeakyReLU(negative_slope=0.1)
-#     def forward(self, x):
-#         x=self.lkrelu(x)
-#         x = self.fc(x)
-#         x = F.relu(self.bn3(x.view(x.size(0), -1, 4, 4,4)))
-#         #print(x.shape)# unflatten batch of feature vectors to a batch of multi-channel feature maps
-#         x = F.relu(self.bn2(self.conv3(x)))
-#         x = F.relu(self.bn1(self.conv2(x)))
-#         x = self.conv1(x)
-#         x=torch.sigmoid(x)
-#         x =x*(self.vmin+self.vmax)
-#         x[x<self.vmin]=self.vmin
-#         x[x>self.vmax]=self.vmax
-#         return x
-
-    
-# class Autoencoder(nn.Module):
-#     def __init__(self,capacity=64,latent_dims=1,vmin=0.5,vmax=2.5):
-#         super(Autoencoder, self).__init__()
-#         self.encoder = Encoder(capacity=capacity,latent_dims=latent_dims,vmin=vmin,vmax=vmax)
-#         self.decoder = Decoder(capacity=capacity,latent_dims=latent_dims,vmin=vmin,vmax=vmax)
-    
-#     def forward(self, x):
-
-#         latent = self.encoder(x)
-#         x = self.decoder(latent)
-#         return x,latent
-    
-    
     
 class AssignmentModel(nn.Module):
     def __init__(self,model_traveltime, n_station, n_earthquake,tau_max,L=0,cheat=False,loc_earthquake_truth=None,time_earthquake_truth=None,z_truth=None):
         super().__init__()
         self.L=L
         if cheat:
-            # In cheat mode, the parameters will be initialized around the grount truth.  This is used to check whether the SIREN and auto-encoder are well trained.
+            # In the cheat mode, the parameters will be initialized around the grount truth.  This is used to check whether the SIREN and auto-encoder are well trained.
             self.loc_earthquake=nn.Parameter(torch.tensor(loc_earthquake_truth+np.random.rand(n_earthquake,3)*0.1).float())
             self.time_earthquake=nn.Parameter(torch.tensor(time_earthquake_truth+np.random.rand(n_earthquake)*0.1*tau_max).float())
             if L>0:
