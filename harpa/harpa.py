@@ -174,8 +174,9 @@ def association(picks,station_df,config,verbose=0):
         ]
         for slice_index in range(-1,len(unique_labels))
         ]
-
-        results = process_map(run_harpa_wrapper, args, max_workers=config["ncpu"], chunksize=1)
+        chunk_size = max(len(unique_labels) // (config["ncpu"] * 20), 1)
+        #chunk_size=1
+        results = process_map(run_harpa_wrapper, args, max_workers=config["ncpu"], chunksize=chunk_size)
         pick_df_list, catalog_df_list = zip(*results)
         pick_df_list = list(pick_df_list)
         catalog_df_list = list(catalog_df_list)
