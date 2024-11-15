@@ -1,0 +1,10 @@
+.ipynb_checkpoints/
+*.pyc
+__pycache__/
+.DS_Store
+
+Data/
+# Ignore Slurm output and error files
+*.e*
+*.o*
+core.*
