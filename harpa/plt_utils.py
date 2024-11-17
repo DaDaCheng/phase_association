@@ -248,7 +248,7 @@ def plot_assosication_line_window(pick_df,event_idx_key,station_df,catalog,plot_
 import plotly.graph_objects as go
 import plotly.io as pio
 import numpy as np
-def plot3D(V,X,vmin=None,vmax=None,colorbar=True):
+def plot3D(V,X,vmin=None,vmax=None,colorbar=True,show=True):
     V_re=V
     ddata=V_re
     grid_size=len(X)
@@ -378,8 +378,8 @@ def plot3D(V,X,vmin=None,vmax=None,colorbar=True):
         )
     )
 
-
-    fig.show()
+    if show:
+        fig.show()
     return fig
 
 

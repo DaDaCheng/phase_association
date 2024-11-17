@@ -76,7 +76,7 @@ class AssignmentModel_NF(nn.Module):
         super().__init__()
         torch.manual_seed(seed)
         n_event=config['n_event_max']
-        L=config['wave_speed_hidden_dimention']
+        L=config['wave_speed_model_hidden_dim']
         self.L=L
         self.event_locs=nn.Parameter(torch.randn(n_event,3).float())
         self.event_locs.requires_grad_(True)

@@ -244,7 +244,7 @@ class TravelTimeDataset(Dataset):
     
     
 
-class TravelTimeDataset_WS(Dataset):
+class TravelTimeDataset_NF(Dataset):
     def __init__(self,travel_time_list,WaveSpeedData,p_list,model_autoencoder,device,config,beta=0):
         self.n_wavespeed=len(WaveSpeedData)
         self.dx=config['dx(km)']
@@ -258,7 +258,8 @@ class TravelTimeDataset_WS(Dataset):
         p=emb.clone().detach().cpu().squeeze()
         self.z=torch.sigmoid(self.beta*p).numpy()
         self.p_list=p_list
-        print('z,',self.z[:5,:])
+        #print('z,',self.z[:5,:])
+        print('z,',self.z[:5])
         
         
         grid_size_x= int((config['x(km)'][1]-config['x(km)'][0])/dx+1)

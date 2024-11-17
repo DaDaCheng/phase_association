@@ -1,5 +1,5 @@
 from .utils import *
-from .plt_utils import *
+#from .plt_utils import *
 from .utils import annotation
 import json
 from obspy import UTCDateTime as UT
@@ -22,7 +22,7 @@ import multiprocessing as mp
 
 from tqdm.contrib.concurrent import process_map
 from tqdm import tqdm
-
+import platform
     
 
     
@@ -57,15 +57,15 @@ def preprocess_data(picks=None,station_df=None,config=None):
     config['start_time_ref']=start_time_ref
     
     if 'time_before' in config:
-        time_before =  config['max_p_trtime_beforeavel_time']
+        time_before =  config['time_before']
     else:
         time_before=((config["x(km)"][1]-config["x(km)"][0])**2+(config["y(km)"][1]-config["y(km)"][0])**2+(config["z(km)"][1]-config["z(km)"][0])**2)**0.5/config["vel"]['P']
     config['t(s)']=[start_time-time_before,end_time]
 
 
-    config["x(km)"]=   (config["x(km)"][0]-(config["x(km)"][1]-config["x(km)"][0])/10,config["x(km)"][1]+(config["x(km)"][1]-config["x(km)"][0])/10)
-    config["y(km)"]=   (config["y(km)"][0]-(config["y(km)"][1]-config["y(km)"][0])/10,config["y(km)"][1]+(config["y(km)"][1]-config["y(km)"][0])/10)
-    config["z(km)"]=   (config["z(km)"][0]-(config["z(km)"][1]-config["z(km)"][0])/10,config["x(km)"][1]+(config["z(km)"][1]-config["z(km)"][0])/10)
+    config["x(km)"]=   (config["x(km)"][0]-(config["x(km)"][1]-config["x(km)"][0])*config['boundary_rate'],config["x(km)"][1]+(config["x(km)"][1]-config["x(km)"][0])*config['boundary_rate'])
+    config["y(km)"]=   (config["y(km)"][0]-(config["y(km)"][1]-config["y(km)"][0])*config['boundary_rate'],config["y(km)"][1]+(config["y(km)"][1]-config["y(km)"][0])*config['boundary_rate'])
+    config["z(km)"]=   (config["z(km)"][0]-(config["z(km)"][1]-config["z(km)"][0])*config['boundary_rate'],config["x(km)"][1]+(config["z(km)"][1]-config["z(km)"][0])*config['boundary_rate'])
 
 
     station_df['arrival_time_list_P'] = None
@@ -103,7 +103,7 @@ def run_harpa_wrapper(args):
     return run_harpa(*args)
 
 
-def association(picks,station_df,config,verbose=0):
+def association(picks,station_df,config,verbose=0,model_traveltime=None):
     picks=copy.deepcopy(picks)
     default_config = {
         'neural_field': False,
@@ -115,7 +115,7 @@ def association(picks,station_df,config,verbose=0):
         'lr_decay': 0.1,
         'epoch_before_decay': 10000,
         'epoch_after_decay': 10000,
-        'dbscan_min_samples': 3,
+        'dbscan_min_samples': 1,
         'DBSCAN': True,
         'max_time_residue':  2,
         'min_peak_pre_event': 16,
@@ -131,8 +131,8 @@ def association(picks,station_df,config,verbose=0):
         'beta_time':0.5,
         'beta_space':0.5,
         'beta_z':0.5,
-        'init': 'data'
-        
+        'init': 'data',
+        'boundary_rate':0.05,
     }
 
     config = {**default_config, **config}
@@ -152,45 +152,82 @@ def association(picks,station_df,config,verbose=0):
     if verbose>0:
         print(f"Associating {len(picks)} picks separated into {len(unique_labels)} slides with {config['ncpu']} CPUs")
 
-    
-    if config["ncpu"] == 1:
+    if config['neural_field']:
+        config["ncpu"] = 1
         pick_df_list=[]
         catalog_df_list=[]
         for slice_index in tqdm(range(len(unique_labels))):    
-            pick_df,catalog_df=run_harpa(picks=picks[picks['labels']==slice_index],station_df=station_df,config=config,verbose=verbose,skip=slice_index<0)
+            pick_df,catalog_df,z=run_harpa(picks=picks[picks['labels']==slice_index],station_df=station_df,config=config,verbose=verbose,skip=slice_index<0,model_traveltime=model_traveltime)
             pick_df_list.append(pick_df)
             catalog_df_list.append(catalog_df)
-    else:
         
-        args = [
-        [
-            picks[picks['labels']==slice_index],    # picks
-            station_df,              # station_df
-            config,            # harpa_config
-            'cpu',                   # device
-            verbose,                 # verbose
-            slice_index<0,            # skip the association
-            slice_index + 1024      # random seed
-        ]
-        for slice_index in range(-1,len(unique_labels))
-        ]
-        chunk_size = max(len(unique_labels) // (config["ncpu"] * 20), 1)
-        #chunk_size=1
-        results = process_map(run_harpa_wrapper, args, max_workers=config["ncpu"], chunksize=chunk_size)
-        pick_df_list, catalog_df_list = zip(*results)
-        pick_df_list = list(pick_df_list)
-        catalog_df_list = list(catalog_df_list)
+    else:
+        if config["ncpu"] == 1:
+            pick_df_list=[]
+            catalog_df_list=[]
+            for slice_index in tqdm(range(len(unique_labels))):    
+                pick_df,catalog_df=run_harpa(picks=picks[picks['labels']==slice_index],station_df=station_df,config=config,verbose=verbose,skip=slice_index<0)
+                pick_df_list.append(pick_df)
+                catalog_df_list.append(catalog_df)
+        else:
+            args = [
+            [
+                picks[picks['labels']==slice_index],    # picks
+                station_df,              # station_df
+                config,            # harpa_config
+                'cpu',                   # device
+                verbose,                 # verbose
+                slice_index<0,            # skip the association
+                slice_index + 1024      # random seed
+            ]
+            for slice_index in range(-1,len(unique_labels))
+            ]
+            chunk_size = max(len(unique_labels) // (config["ncpu"] * 20), 1)
+            #chunk_size=1
+            results = process_map(run_harpa_wrapper, args, max_workers=config["ncpu"], chunksize=chunk_size)
+            pick_df_list, catalog_df_list = zip(*results)
+            pick_df_list = list(pick_df_list)
+            catalog_df_list = list(catalog_df_list)
 
+            # if platform.system().lower() in ["darwin", "windows"]:
+            #     context = "spawn"
+            # else:
+            #     context = "fork"
+            # chunk_size = max(len(unique_labels) // (config["ncpu"] * 20), 1)
+            # with mp.get_context(context).Pool(config["ncpu"]) as p:
+            #     results = p.starmap(
+            #         run_harpa,
+            #         [
+            #             [
+            #                 picks[picks['labels']==slice_index],    # picks
+            #                 station_df,              # station_df
+            #                 config,            # harpa_config
+            #                 'cpu',                   # device
+            #                 verbose,                 # verbose
+            #                 slice_index<0,            # skip the association
+            #                 slice_index + 1024      # random seed
+            #             ]
+            #             for slice_index in range(-1,len(unique_labels))
+            #         ],
+            #         chunksize=chunk_size,
+            #     )
+                            
+            # pick_df_list, catalog_df_list=[],[]
+            # for  pick_df, catalog_df in results:
+            #     pick_df_list.append(pick_df)
+            #     catalog_df_list.append(catalog_df)
 
-    
-    pick_df, catalog_df=reindex_picks_and_events(pick_df_list,catalog_df_list,config,overlap=0)
+    pick_df, catalog_df=reindex_picks_and_events(pick_df_list,catalog_df_list,config,overlap=0,verbose=verbose)
     if verbose>0:
         print(f' Associated {len(catalog_df)} unique events')
-    return pick_df, catalog_df
+    if config['neural_field']:
+        return pick_df, catalog_df,z
+    else:
+        return pick_df, catalog_df
         
 
-def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, skip=False,seed=0):
-    
+def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, skip=False,seed=0,model_traveltime=None):
+    #print(".", end="")
     config=copy.deepcopy(config)
 
     lr = config['lr']
@@ -247,7 +284,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
     if config['neural_field']:
         if isinstance(model_traveltime, str):
             from .model import Siren
-            L=4
+            L=config['wave_speed_model_hidden_dim']
             first_omega_0=30
             hidden_omega_0=30
             model_traveltime_cpu= Siren(in_features=3+L, out_features=len(station_df), hidden_features=128, 
@@ -357,6 +394,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
             true_time_list=torch.tensor(true_time_list).to(device)
 
             loss,_=compute_assignment_loss(time_list,true_time_list)
+            #print(time_list,true_time_list)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
