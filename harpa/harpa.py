@@ -65,7 +65,7 @@ def preprocess_data(picks=None,station_df=None,config=None):
 
     config["x(km)"]=   (config["x(km)"][0]-(config["x(km)"][1]-config["x(km)"][0])*config['boundary_rate'],config["x(km)"][1]+(config["x(km)"][1]-config["x(km)"][0])*config['boundary_rate'])
     config["y(km)"]=   (config["y(km)"][0]-(config["y(km)"][1]-config["y(km)"][0])*config['boundary_rate'],config["y(km)"][1]+(config["y(km)"][1]-config["y(km)"][0])*config['boundary_rate'])
-    config["z(km)"]=   (config["z(km)"][0]-(config["z(km)"][1]-config["z(km)"][0])*config['boundary_rate'],config["x(km)"][1]+(config["z(km)"][1]-config["z(km)"][0])*config['boundary_rate'])
+    config["z(km)"]=   (config["z(km)"][0]-(config["z(km)"][1]-config["z(km)"][0])*config['boundary_rate'],config["z(km)"][1]+(config["z(km)"][1]-config["z(km)"][0])*config['boundary_rate'])
 
 
     station_df['arrival_time_list_P'] = None

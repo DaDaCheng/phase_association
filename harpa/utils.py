@@ -893,6 +893,10 @@ def DBSCAN_cluster(picks,stations,config):
     locs = meta[['x(km)', 'y(km)', 'z(km)']].to_numpy()
     
     vel = config["vel"] 
+    if "prob" in picks.columns:
+        pass
+    else:
+        picks["prob"]=1.0
     phase_weight = picks["prob"].to_numpy()[:, np.newaxis]
     
     if "dbscan_eps" in config:
