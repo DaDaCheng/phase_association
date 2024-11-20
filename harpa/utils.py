@@ -870,7 +870,7 @@ def remove_repeat_events(picks,catalog_df,time_threshold=5,space_threshold=10):
 
 
 
-
+# From GaMMA
 def DBSCAN_cluster(picks,stations,config):
     from datetime import datetime
     from sklearn.cluster import DBSCAN
