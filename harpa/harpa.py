@@ -61,6 +61,7 @@ def preprocess_data(picks=None,station_df=None,config=None):
     else:
         time_before=((config["x(km)"][1]-config["x(km)"][0])**2+(config["y(km)"][1]-config["y(km)"][0])**2+(config["z(km)"][1]-config["z(km)"][0])**2)**0.5/config["vel"]['P']
         config['time_before']=time_before
+        
     config['t(s)']=[start_time-time_before,end_time]
 
 
