@@ -25,11 +25,12 @@ HARPA seamlessly integrates with workflow in [SeisBench](https://github.com/seis
 | 2019 Ridgcrest earthquake                                 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16lE4eu0SM3xQVb-686XL-0evPXOTPzwC#scrollTo=ZUFnMmLlTHec) |
 
 ## Usage  
+To perform the association, you need to run 
 ```
 from harpa import association
 pick_df_out, catalog_df=association(pick_df,station_df,config)
 ```
-`pick_df`: This DataFrame contains information about seismic picks with the structure as
+with `pick_df` as the DataFrame containing information about seismic picks with the structure as
 
 | id        | timestamp               | prob     | type |
 |-----------|-------------------------|----------|------|
@@ -39,7 +40,7 @@ pick_df_out, catalog_df=association(pick_df,station_df,config)
 | CX.MNMCX. | 2014-04-01 00:13:36.950 | 0.130214 | s    |
 
 
-where `prob` is optional, and  `station_df` contains information about seismic stations with the structure as
+where `prob` is optional. And `station_df` contains information about seismic stations with the structure as
 
 | id       | longitude | latitude | elevation(m) | x(km)     | y(km)     | z(km)   |
 |----------|-----------|----------|--------------|-----------|-----------|---------|
