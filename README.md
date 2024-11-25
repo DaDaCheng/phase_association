@@ -51,7 +51,7 @@ where `prob` is optional. And `station_df` contains information about seismic st
 | CX.PB04. | 381.654501| 7529.786448| -1.520  |
 
 
-## configs and notes
+## Configs and notes
 Mandatory configurations: 
 | config    | description               | example  |
 |-----------|-------------------------|----------|
@@ -103,11 +103,13 @@ Other configurations:
     pick_df_out, catalog_df=association(pick_df,station_df,config)
     ```
     
-* Fixed wave speed needs less training epochs while unknown wave required more, e.g. 10000. Increase number of epochs can also help find more events, slightly.
+* Fixed wave speed needs less training epochs while unknown wave requires more, e.g. 10000. Increasing number of epochs can also help find more events, slightly.
+
 * For unknown speed model, use
     ```
     pick_df_out, catalog_df=association(pick_df,station_df,config,model_traveltime=model_traveltime)
     ```
-    where `model_traveltime` is a model with input as the source location and output as the traveltime from source to each stations. Details can be seen in the [example](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing).
+    where `model_traveltime` is a model with input as the source location and output as the traveltime from source to each station. Details can be seen in the [example](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing).
+
 
 
