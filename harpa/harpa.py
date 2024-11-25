@@ -122,7 +122,7 @@ def association(picks,station_df,config,verbose=0,model_traveltime=None):
         'noisy_pick': True,
         'LSA': True,
         'wasserstein_p': 2,
-        'max_time_residue':  2,
+        'max_time_residual':  2,
         'min_peak_pre_event': 16,
         'min_peak_pre_event_s': 0,
         'min_peak_pre_event_p': 0,
@@ -440,7 +440,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
         print(f'Final SGLD loss: {loss_best :.2f}')
         
     
-    max_time_residue=config['max_time_residue']
+    max_time_residual=config['max_time_residual']
     min_peak_pre_event=config['min_peak_pre_event']
     min_peak_pre_event_s=config['min_peak_pre_event_s']
     min_peak_pre_event_p=config['min_peak_pre_event_p']
@@ -448,7 +448,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
     # print(pick_df)
     # print(station_df)
     if config['second_adjust']:
-        pick_df, catalog_df=annotation(pick_df,station_df,Harpa,max_time_residue,min_peak_pre_event,start_time_ref,sort_evnet_index=False,phases=phases,min_peak_pre_event_s=min_peak_pre_event_s,min_peak_pre_event_p=min_peak_pre_event_p)
+        pick_df, catalog_df=annotation(pick_df,station_df,Harpa,max_time_residual,min_peak_pre_event,start_time_ref,sort_evnet_index=False,phases=phases,min_peak_pre_event_s=min_peak_pre_event_s,min_peak_pre_event_p=min_peak_pre_event_p)
         
         
         Harpa.reset_training()
@@ -489,7 +489,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
                         break
                     lastloss=loss.item()
                               
-    pick_df, catalog_df=annotation(pick_df,station_df,Harpa,max_time_residue,min_peak_pre_event,start_time_ref,sort_evnet_index=True,phases=phases,min_peak_pre_event_s=min_peak_pre_event_s,min_peak_pre_event_p=min_peak_pre_event_p)
+    pick_df, catalog_df=annotation(pick_df,station_df,Harpa,max_time_residual,min_peak_pre_event,start_time_ref,sort_evnet_index=True,phases=phases,min_peak_pre_event_s=min_peak_pre_event_s,min_peak_pre_event_p=min_peak_pre_event_p)
 
     if config['denoise_rate']>0 and len(catalog_df)>0:
         if verbose>2:

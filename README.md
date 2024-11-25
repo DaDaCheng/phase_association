@@ -21,8 +21,9 @@ HARPA seamlessly integrates with workflow in [SeisBench](https://github.com/seis
 
 | Examples                                         |  |
 |--------------------------------------------------|---|
-| 2019 Ridgcrest earthquake                                 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16lE4eu0SM3xQVb-686XL-0evPXOTPzwC#scrollTo=ZUFnMmLlTHec) |
+| 2019 Ridgcrest earthquake                             | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16lE4eu0SM3xQVb-686XL-0evPXOTPzwC#scrollTo=ZUFnMmLlTHec) |
 | 2014 Chile earthquake                                 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1o7S8n2LtJChraLoHqoNykQ_m9aqWifG-?usp=sharing) |
+| Unknown wave speed model and neural fields            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing) |
 
 ## Usage  
 To perform the association, you need to run 
@@ -49,7 +50,64 @@ where `prob` is optional. And `station_df` contains information about seismic st
 | CX.PB03. | 422.289208| 7561.616351| -1.460  |
 | CX.PB04. | 381.654501| 7529.786448| -1.520  |
 
-Details about the `config` parameter and settings for the unknown wave speed model can be found in the [documentation](xxxx).
 
+## configs and notes
+Mandatory configurations: 
+| config    | description               | example  |
+|-----------|-------------------------|----------|
+| `x(km)` | x range for the searching space  | `[0,100]` |
+| `y(km)` | y range for the searching space  | `[0,100]` |
+| `z(km)` | y range for the searching space  | `[0,100]` |
+|`vel`| homogenous wave speed mode  |`{"P": 7, "S": 4.0}`|
+
+
+
+Other configurations: 
+| config    | description               | default  |
+|-----------|-------------------------|----------|
+| `lr`|learning rate |  `0.1` |
+| `noise` | $\epsilon$ in SGLD | `1e-3` |
+| `lr_decay` | learning rate and noise decay | `0.1` |
+| `epoch_before_decay` | number of epoch before decay | `1000` |
+| `epoch_after_decay` | number of epoch after decay | `1000` |
+| `LSA`| use linear sum assignment in computing loss  |`True`|
+| `wasserstein_p`| the order of the Wasserstein distance  |`2`|
+| `P_phase`| data contains P-phase | `True`|
+| `S_phase`| data contains S-phase | `False`|
+|`noisy_pick`| data contains missing or spurious picks |`True`|
+|`min_peak_pre_event`| filter events by the minimum number of picks for each event|`16`|
+|`min_peak_pre_event_p`| filter events by the minimum number of p picks for each event|`0`|
+|`min_peak_pre_event_s`| filter events by the s picks for each event|`0`|
+|`max_time_residual`|above events were counted only when the time residual was below this threshold. |`2`|
+|`denoise_rate`| filter events by the ratio of nearest station|`0`|
+|`DBSCAN`| using DBSCAN to divide the data into different slides |`True`|
+|`remove_overlap_events`| remove repeated events if the slides overlap|`False`|
+| `neural_field`| `True` for unknown wave speed model,<br> `False` for fixed wave speed model |`False` |
+|`wave_speed_model_hidden_dim`|hidden dimension of the wave speed model if `neural_field` is true  ||
+|`optimize_wave_speed`| if search wave speed model |`False`|
+|`optimize_wave_speed_after_decay`|search wave speed model after learning rate decay|`True`|
+|`second_adjust`|adjust the location slightly after training| `True`|
+|`time_before`| time difference between the start of the search and the time of the first pick | 0.5 * maximum searching distance / P-wave speed |
+
+
+
+* The multiprocessing might conflict with multithreading in Seisbench, so if you run Seisbench first,  please use
+    ```
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        future = executor.submit(association, pick_df, station_df, config,verbose)
+    pick_df_out, catalog_df = future.result()
+    ```
+    instead of
+    ```
+    pick_df_out, catalog_df=association(pick_df,station_df,config)
+    ```
+    
+* Fixed wave speed needs less training epochs while unknown wave required more, e.g. 10000. Increase number of epochs can also help find more events, slightly.
+* For unknown speed model, use
+    ```
+    pick_df_out, catalog_df=association(pick_df,station_df,config,model_traveltime=model_traveltime)
+    ```
+    where `model_traveltime` is a model with input as the source location and output as the traveltime from source to each stations. Details can be seen in the [example](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing).
 
 

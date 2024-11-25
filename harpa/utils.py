@@ -86,7 +86,7 @@ def compute_assignment_loss(list_a,list_b,noisy_pick=True,LSA=True,p=2):
 
 
 
-def annotation(pick_df,station_df,Harpa,max_time_residue,min_peak_pre_event,start_time_ref,sort_evnet_index=False,phases=['P'],min_peak_pre_event_p=-1,min_peak_pre_event_s=-1):
+def annotation(pick_df,station_df,Harpa,max_time_residual,min_peak_pre_event,start_time_ref,sort_evnet_index=False,phases=['P'],min_peak_pre_event_p=-1,min_peak_pre_event_s=-1):
     pick_df=pick_df.copy()
     pick_df['event_index'] = None
     pick_df['diff_time'] = None
@@ -117,7 +117,7 @@ def annotation(pick_df,station_df,Harpa,max_time_residue,min_peak_pre_event,star
                         even_idx_new=assignment_results[i].item()
                         time_ref_new=time_list[index[i]].item()
                         dtime=time_ref_new-true_time_list[i].item()
-                        if np.abs(dtime)>max_time_residue:
+                        if np.abs(dtime)>max_time_residual:
                             even_idx_new=-1
                         pick_df.at[pickindex,'event_index']=even_idx_new
                         pick_df.at[pickindex,'diff_time']=dtime
@@ -128,7 +128,7 @@ def annotation(pick_df,station_df,Harpa,max_time_residue,min_peak_pre_event,star
                             even_idx_new=sort_index[index==i].item()
                             time_ref_new=time_list[index==i].item()
                             dtime=time_ref_new-true_time_list[i].item()
-                            if np.abs(dtime)>max_time_residue:
+                            if np.abs(dtime)>max_time_residual:
                                 even_idx_new=-1
                         else:
                             even_idx_new=-1
