@@ -278,7 +278,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
         
     config['n_event_max']=n_event_max
     
-    if verbose>3:
+    if verbose>6:
         print('max number of event in this slice:',n_event_max, 'number of picks in this slice:',len(pick_df))
     
     if verbose>4:
@@ -426,7 +426,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
                     patience_count=patience_count+1
                 if patience_count>patience_max:
                     break
-            if verbose>3:
+            if verbose>4:
                 if config['neural_field']:
                     z=torch.sigmoid(Harpa.model_traveltime_p.data*Harpa.beta_z)
                     z=z.numpy()
@@ -480,7 +480,7 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
                             arrival_time_S=Harpa.arrival_time(station_index,phase='S')[training_index]
                             loss+=(pick_times_list_S[i]-arrival_time_S)**2                            
                     if step%10==0:
-                        if verbose>3:
+                        if verbose>8:
                             print(f'Training index: {training_index}, Step: {step}, Loss: {loss.item() :.2f}')
                     #loss=loss/max_p_travel_time
                     loss.backward()

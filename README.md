@@ -1,37 +1,19 @@
-# <span style="font-family: sans-serif;">Harpa</span>: High-Rate Phase Association with Travel Time Neural Fields
 
+# HARPA Usage Guide
 
-## About
+## Usage
 
-This is the source code for paper _Harpa: High-Rate Phase Association with Travel Time Neural Fields_.
+To perform the association, use the following code:
 
-
-## Installation 
-Simply run:
-```
-pip install -q git+https://github.com/DaDaCheng/phase_association.git
-```
-It requires `torch`,`obspy`, `pyproj`, `pandas`, `POT` for constant wave speed model, and `skfmm` from unknown wave speed model.
-
-
-## Quick start in SeisBench and colab demo
-
-HARPA seamlessly integrates with workflow in [SeisBench](https://github.com/seisbench/seisbench).
-
-
-| Examples                                         |  |
-|--------------------------------------------------|---|
-| 2019 Ridgcrest earthquake                             | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16lE4eu0SM3xQVb-686XL-0evPXOTPzwC#scrollTo=ZUFnMmLlTHec) |
-| 2014 Chile earthquake                                 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1o7S8n2LtJChraLoHqoNykQ_m9aqWifG-?usp=sharing) |
-| Unknown wave speed model and neural fields            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing) |
-
-## Usage  
-To perform the association, you need to run 
-```
+```python
 from harpa import association
-pick_df_out, catalog_df=association(pick_df,station_df,config)
+pick_df_out, catalog_df = association(pick_df, station_df, config)
 ```
-with `pick_df` as the DataFrame containing information about seismic picks with the structure as
+
+### Input Requirements
+
+#### `pick_df`
+A DataFrame containing seismic pick information with the following structure:
 
 | id        | timestamp               | prob     | type |
 |-----------|-------------------------|----------|------|
@@ -40,76 +22,105 @@ with `pick_df` as the DataFrame containing information about seismic picks with 
 | CX.MNMCX. | 2014-04-01 00:13:01.930 | 0.795285 | p    |
 | CX.MNMCX. | 2014-04-01 00:13:36.950 | 0.130214 | s    |
 
+- `id`: Station id
+- `timestamp`: arrival time of the picks (`np.datetime64`)
+- `prob`: Optional column indicating the probability of the pick.
+- `type`: Indicates the phase type (e.g., `p` or `s`).
 
-where `prob` is optional. And `station_df` contains information about seismic stations with the structure as
+#### `station_df`
+A DataFrame containing seismic station information with the following structure:
 
-| id       | x(km)     | y(km)     | z(km)   |
-|----------|-----------|-----------|---------|
-| CX.PB01. | 449.359240| 7672.990624| -0.900  |
-| CX.PB02. | 407.073618| 7642.202105| -1.015  |
-| CX.PB03. | 422.289208| 7561.616351| -1.460  |
-| CX.PB04. | 381.654501| 7529.786448| -1.520  |
+| id       | x (km)     | y (km)     | z (km)   |
+|----------|------------|------------|----------|
+| CX.PB01. | 449.359240 | 7672.990624| -0.900   |
+| CX.PB02. | 407.073618 | 7642.202105| -1.015   |
+| CX.PB03. | 422.289208 | 7561.616351| -1.460   |
+| CX.PB04. | 381.654501 | 7529.786448| -1.520   |
 
+---
 
-## Configs and notes
-Mandatory configurations: 
-| config    | description               | example  |
-|-----------|-------------------------|----------|
-| `x(km)` | x range for the searching space  | `[0,100]` |
-| `y(km)` | y range for the searching space  | `[0,100]` |
-| `z(km)` | y range for the searching space  | `[0,100]` |
-|`vel`| homogenous wave speed mode  |`{"P": 7, "S": 4.0}`|
+## Configurations and Notes
 
+### Mandatory Configurations
 
+| Config    | Description                          | Example      |
+|-----------|--------------------------------------|--------------|
+| `x(km)`   | X range for the search space         | `[0, 100]`   |
+| `y(km)`   | Y range for the search space         | `[0, 100]`   |
+| `z(km)`   | Z range for the search space         | `[0, 100]`   |
+| `vel`     | Homogeneous wave speed model         | `{"P": 7, "S": 4.0}` |
 
-Other configurations: 
-| config    | description               | default  |
-|-----------|-------------------------|----------|
-| `lr`|learning rate |  `0.1` |
-| `noise` | $\epsilon$ in SGLD | `1e-3` |
-| `lr_decay` | learning rate and noise decay | `0.1` |
-| `epoch_before_decay` | number of epoch before decay | `1000` |
-| `epoch_after_decay` | number of epoch after decay | `1000` |
-| `LSA`| use linear sum assignment in computing loss  |`True`|
-| `wasserstein_p`| the order of the Wasserstein distance  |`2`|
-| `P_phase`| data contains P-phase | `True`|
-| `S_phase`| data contains S-phase | `False`|
-|`noisy_pick`| data contains missing or spurious picks |`True`|
-|`min_peak_pre_event`| filter events by the minimum number of picks for each event|`16`|
-|`min_peak_pre_event_p`| filter events by the minimum number of p picks for each event|`0`|
-|`min_peak_pre_event_s`| filter events by the s picks for each event|`0`|
-|`max_time_residual`|above events were counted only when the time residual was below this threshold. |`2`|
-|`denoise_rate`| filter events by the ratio of nearest station|`0`|
-|`DBSCAN`| using DBSCAN to divide the data into different slides |`True`|
-|`remove_overlap_events`| remove repeated events if the slides overlap|`False`|
-| `neural_field`| `True` for unknown wave speed model,<br> `False` for fixed wave speed model |`False` |
-|`wave_speed_model_hidden_dim`|hidden dimension of the wave speed model if `neural_field` is true  ||
-|`optimize_wave_speed`| if search wave speed model |`False`|
-|`optimize_wave_speed_after_decay`|search wave speed model after learning rate decay|`True`|
-|`second_adjust`|adjust the location slightly after training| `True`|
-|`time_before`| time difference between the start of the search and the time of the first pick | 0.5 * maximum searching distance / P-wave speed |
+### Optional Configurations
 
+| Config                      | Description                                            | Default      |
+|-----------------------------|--------------------------------------------------------|--------------|
+| `lr`                        | Learning rate                                         | `0.1`        |
+| `noise`                     | $\epsilon$ in SGLD                                    | `1e-3`       |
+| `lr_decay`                  | Learning rate and noise decay                         | `0.1`        |
+| `epoch_before_decay`        | Number of epochs before decay                         | `1000`       |
+| `epoch_after_decay`         | Number of epochs after decay                          | `1000`       |
+| `LSA`                       | Use linear sum assignment in computing loss           | `True`       |
+| `wasserstein_p`             | Order of the Wasserstein distance                     | `2`          |
+| `P_phase`                   | Indicates if data contains P-phase                   | `True`       |
+| `S_phase`                   | Indicates if data contains S-phase                   | `False`      |
+| `noisy_pick`                | Indicates if data contains missing/spurious picks    | `True`       |
+| `min_peak_pre_event`        | Minimum number of picks per event                    | `16`         |
+| `min_peak_pre_event_p`      | Minimum number of P-phase picks per event            | `0`          |
+| `min_peak_pre_event_s`      | Minimum number of S-phase picks per event            | `0`          |
+| `max_time_residual`         | Maximum allowable time residual for events           | `2`          |
+| `denoise_rate`              | Filtering based on nearest station ratio             | `0`          |
+| `DBSCAN`                    | Use DBSCAN to segment data into different slices     | `True`       |
+| `remove_overlap_events`     | Remove repeated events if slices overlap             | `False`      |
+| `neural_field`              | `True` for unknown wave speed model, `False` otherwise | `False`    |
+| `wave_speed_model_hidden_dim` | Hidden dimension for wave speed model if `neural_field=True` | - |
+| `optimize_wave_speed`       | Optimize wave speed model                             | `False`      |
+| `optimize_wave_speed_after_decay` | Optimize wave speed after learning rate decay       | `True`       |
+| `second_adjust`             | Adjust locations after training                      | `True`       |
+| `time_before`               | Time difference between the search start and first pick | `0.5 * maximum_search_distance / P_wave_speed` |
 
+---
 
-* The multiprocessing might conflict with multithreading in Seisbench, so if you run Seisbench first,  please use
-    ```
+### Notes
+
+1. **Multiprocessing and Seisbench Compatibility**:
+   - The multiprocessing module might conflict with Seisbench's multithreading. If you use Seisbench first, wrap your association call as follows:
+
+    ```python
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=100) as executor:
-        future = executor.submit(association, pick_df, station_df, config,verbose)
+        future = executor.submit(association, pick_df, station_df, config, verbose)
     pick_df_out, catalog_df = future.result()
     ```
-    instead of
-    ```
-    pick_df_out, catalog_df=association(pick_df,station_df,config)
-    ```
-    
-* Fixed wave speed needs less training epochs while unknown wave requires more, e.g. 10000. Increasing number of epochs can also help find more events, slightly.
 
-* For unknown speed model, use
+   Otherwise, you can directly use:
+
+    ```python
+    pick_df_out, catalog_df = association(pick_df, station_df, config)
     ```
-    pick_df_out, catalog_df=association(pick_df,station_df,config,model_traveltime=model_traveltime)
+
+2. **Training Epochs**:
+   - Fixed wave speed models require fewer training epochs. Increasing the number of epochs can help identify more events.
+   - Unknown wave speed models may need more epochs (e.g., 10,000). 
+   - 
+3. **Using Unknown Speed Models**:
+   - For unknown speed models, include a `model_traveltime` parameter:
+
+    ```python
+    pick_df_out, catalog_df = association(pick_df, station_df, config, model_traveltime=model_traveltime)
     ```
-    where `model_traveltime` is a model with input as the source location and output as the traveltime from source to each station. Details can be seen in the [example](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing).
+
+   - Here, `model_traveltime` is a model with the source location as input and travel times to each station as output. See the [example](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing) for details.
+
+3. **Verbose Settings**:
+   - `verbose > 10`: Prints picks and stations.
+   - `verbose > 8`: Prints training details for each epoch.
+   - `verbose > 6`: Prints training settings, including CPUs.
+   - `verbose > 4`: Prints configuration details.
+   - `verbose > 2`: Prints other details.
+   - `verbose = 0`: Silent mode.
 
 
 
+
+
+--- 
