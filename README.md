@@ -1,5 +1,32 @@
 
-# HARPA Usage Guide
+# <span style="font-family: sans-serif;">HARPA</span>: High-Rate Phase Association with Travel Time Neural Fields
+
+
+## About
+
+This is the source code for paper _HARPA: High-Rate Phase Association with Travel Time Neural Fields_.
+
+
+## Installation 
+Simply run:
+```python
+pip install -q git+https://github.com/DaDaCheng/phase_association.git
+```
+It requires `torch`,`obspy`, `pyproj`, `pandas`, `POT` and `skfmm` (only from unknown wave speed model).
+
+
+## Quick start in SeisBench and colab demo
+
+HARPA seamlessly integrates with workflow in [SeisBench](https://github.com/seisbench/seisbench).
+
+
+| Examples                                         |  |
+|--------------------------------------------------|---|
+| 2019 Ridgcrest earthquake                             | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16lE4eu0SM3xQVb-686XL-0evPXOTPzwC#scrollTo=ZUFnMmLlTHec) |
+| 2014 Chile earthquake                                 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1o7S8n2LtJChraLoHqoNykQ_m9aqWifG-?usp=sharing) |
+| Unknown wave speed model and neural fields            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing) |
+
+
 
 ## Usage
 
