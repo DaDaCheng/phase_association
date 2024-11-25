@@ -115,10 +115,13 @@ def association(picks,station_df,config,verbose=0,model_traveltime=None):
         'noise': 1e-3,
         'patience_max': 10,
         'lr_decay': 0.1,
-        'epoch_before_decay': 10000,
-        'epoch_after_decay': 10000,
+        'epoch_before_decay': 1000,
+        'epoch_after_decay': 1000,
         'dbscan_min_samples': 1,
         'DBSCAN': True,
+        'noisy_pick': True,
+        'LSA': True,
+        'wasserstein_p': 2,
         'max_time_residue':  2,
         'min_peak_pre_event': 16,
         'min_peak_pre_event_s': 0,
@@ -130,7 +133,7 @@ def association(picks,station_df,config,verbose=0,model_traveltime=None):
         'S_phase': False,
         'remove_overlap_events': False,
         'denoise_rate': 0,
-        'beta_time':0.5,
+        'beta_time':1,
         'beta_space':0.5,
         'beta_z':0.5,
         'init': 'data',
@@ -380,6 +383,9 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
     loss_best=1000
     patience_max=patience_max
     patience_count=0
+    noisy_pick=config['noisy_pick']
+    LSA=config['LSA']
+    wasserstein_p=config['wasserstein_p']
     for step in range(epoch_before_decay+epoch_after_decay):
         station_index=np.random.randint(n_station)
         phase=random.choice(phases)
@@ -394,8 +400,8 @@ def run_harpa(picks=None,station_df=None,config=None,device='cpu',verbose=0, ski
         if len(true_time_list)>0:
             time_list,sort_index=Harpa(station_index,phase=phase)
             true_time_list=torch.tensor(true_time_list).to(device)
-
-            loss,_=compute_assignment_loss(time_list,true_time_list)
+            #loss,_=compute_assignment_loss(time_list,true_time_list)
+            loss,_=compute_assignment_loss(time_list,true_time_list,noisy_pick=noisy_pick,LSA=LSA,p=wasserstein_p)
             #print(time_list,true_time_list)
             optimizer.zero_grad()
             loss.backward()

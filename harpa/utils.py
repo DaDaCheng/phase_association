@@ -10,6 +10,8 @@ from sklearn.neighbors import NearestNeighbors
 from tqdm import tqdm
 import pandas as pd
 
+from ot.lp import wasserstein_1d
+
 
 def empty_pick_def():
     return pd.co
@@ -33,22 +35,51 @@ def count_ari_nmi(true_label,my_label):
     nmi = normalized_mutual_info_score(true_label, my_label)
     return ari,nmi
 
-def compute_assignment_loss(list_a,list_b):
-    if len(list_a)>len(list_b):
-        a=list_a
-        b=list_b
-    else:
-        b=list_a
-        a=list_b
-    distance_matrix = torch.abs(a[:, None] - b[None, :])
+def compute_assignment_loss(list_a,list_b,noisy_pick=True,LSA=True,p=2):
+    if LSA:
+        if len(list_a)>len(list_b):
+            a=list_a
+            b=list_b
+        else:
+            b=list_a
+            a=list_b
+    
+        
+        distance_matrix = torch.abs(a[:, None] - b[None, :])
 
-    row_ind, col_ind = linear_sum_assignment(distance_matrix.clone().detach().cpu().numpy())
+        row_ind, col_ind = linear_sum_assignment(distance_matrix.clone().detach().cpu().numpy())
+        
+        matched_a = a[row_ind]
+        matched_b = b[col_ind]
+        
+        loss = torch.sum(torch.abs(matched_a - matched_b))
+        
+        return loss, row_ind.tolist()
+        
+    else:
+        if noisy_pick:
+            if len(list_a)>len(list_b):
+                a=list_a
+                b=list_b
+            else:
+                b=list_a
+                a=list_b
     
-    matched_a = a[row_ind]
-    matched_b = b[col_ind]
+        
+            distance_matrix = torch.abs(a[:, None] - b[None, :])
+
+            row_ind, col_ind = linear_sum_assignment(distance_matrix.clone().detach().cpu().numpy())
+            
+            matched_a = a[row_ind]
+            matched_b = b[col_ind]
+        
+        else:
+            matched_a= a
+            matched_b= b
+        loss=wasserstein_1d(matched_a, matched_b, p=p)
+        return loss, None
+
     
-    loss = torch.sum(torch.abs(matched_a - matched_b))
-    return loss, row_ind.tolist()
 
 
 
@@ -77,7 +108,8 @@ def annotation(pick_df,station_df,Harpa,max_time_residue,min_peak_pre_event,star
                     time_list,sort_index=time_list.to('cpu'),sort_index.to('cpu')
                 true_time_list=torch.tensor(true_time_list)
                 
-                _,index=compute_assignment_loss(time_list,true_time_list)
+                #_,index=compute_assignment_loss(time_list,true_time_list)
+                _,index=compute_assignment_loss(time_list,true_time_list,LSA=True)
                 
                 if len(time_list)>=len(true_time_list):
                     assignment_results=sort_index[index]
