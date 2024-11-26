@@ -24,7 +24,7 @@ HARPA seamlessly integrates with workflow in [SeisBench](https://github.com/seis
 |--------------------------------------------------|---|
 | 2019 Ridgcrest earthquake                             | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16lE4eu0SM3xQVb-686XL-0evPXOTPzwC#scrollTo=ZUFnMmLlTHec) |
 | 2014 Chile earthquake                                 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1o7S8n2LtJChraLoHqoNykQ_m9aqWifG-?usp=sharing) |
-| Unknown wave speed model and neural fields            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing) |
+| Unknown wave speed model and neural fields            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Ri__J-Z2-XEHMlrLAy1GD802COI4kkva?usp=sharing) |
 
 
 
@@ -139,12 +139,12 @@ A DataFrame containing seismic station information with the following structure:
    - Here, `model_traveltime` is a model with the source location as input and travel times to each station as output. See the [example](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing) for details.
 
 3. **Verbose Settings**:
-   - `verbose > 10`: Prints picks and stations.
-   - `verbose > 8`: Prints training details for each epoch.
-   - `verbose > 6`: Prints training settings, including CPUs.
-   - `verbose > 4`: Prints configuration details.
-   - `verbose > 2`: Prints other details.
-   - `verbose = 0`: Silent mode.
+   - `verbose > 10`: print picks and stations.
+   - `verbose > 8`: print training details for each epoch.
+   - `verbose > 6`: print training settings, including CPUs.
+   - `verbose > 4`: print configuration details.
+   - `verbose > 2`: print other details.
+   - `verbose = 0`: silent mode.
 
 
 
