@@ -8,7 +8,7 @@ from obspy import UTCDateTime
 import matplotlib.pyplot as plt
 import pandas as pd
 
-
+#todo: clean plot function
 
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'orange', 'purple', 'brown','pink']
 colors=np.array(colors)
