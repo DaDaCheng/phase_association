@@ -258,7 +258,8 @@ class TravelTimeDataset_NF(Dataset):
         p=emb.clone().detach().cpu().squeeze()
         self.z=torch.sigmoid(self.beta*p).numpy()
         self.p_list=p_list
-        #print('z,',self.z[:5,:])
+        if self.z.ndim == 1:
+            self.z = np.expand_dims(self.z, axis=-1)
         print('z,',self.z[:5])
         
         

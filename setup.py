@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="harpa",              # 包名
-    version="0.1.0",                       # 版本号
-    packages=find_packages(),              # 自动查找所有模块
-    install_requires=[                     # 指定依赖库
-        # "numpy",                         # 如果有依赖项，取消注释并填写依赖包
+    name="harpa",              
+    version="0.1.0",                       
+    packages=find_packages(),              
+    install_requires=[                     
+        
     ],
     author="Cheng Shi",
     author_email="cheng.shi@unibas.ch",
