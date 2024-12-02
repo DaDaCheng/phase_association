@@ -24,7 +24,7 @@ HARPA seamlessly integrates with workflow in [SeisBench](https://github.com/seis
 |--------------------------------------------------|---|
 | 2019 Ridgcrest earthquake                             | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16lE4eu0SM3xQVb-686XL-0evPXOTPzwC#scrollTo=ZUFnMmLlTHec) |
 | 2014 Chile earthquake                                 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1o7S8n2LtJChraLoHqoNykQ_m9aqWifG-?usp=sharing) |
-| Unknown wave speed model and neural fields            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Ri__J-Z2-XEHMlrLAy1GD802COI4kkva?usp=sharing) |
+| Demo for unknown wave speed and neural fields            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1tv6hiV4K7HAynv6j0rIkTjMnCFt8uhTF?usp=sharing) |
 
 
 
