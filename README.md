@@ -84,8 +84,8 @@ A DataFrame containing seismic station information with the following structure:
 | `lr`                        | Learning rate                                         | `0.1`        |
 | `noise`                     | $\epsilon$ in SGLD                                    | `1e-3`       |
 | `lr_decay`                  | Learning rate and noise decay                         | `0.1`        |
-| `epoch_before_decay`        | Number of epochs before decay                         | `1000`       |
-| `epoch_after_decay`         | Number of epochs after decay                          | `1000`       |
+| `epoch_before_decay`        | Number of epochs before decay                         | `3000`       |
+| `epoch_after_decay`         | Number of epochs after decay                          | `3000`       |
 | `LSA`                       | Use linear sum assignment in computing loss           | `True`       |
 | `wasserstein_p`             | Order of the Wasserstein distance                     | `2`          |
 | `P_phase`                   | Indicates if data contains P-phase                   | `True`       |
@@ -104,7 +104,6 @@ A DataFrame containing seismic station information with the following structure:
 | `optimize_wave_speed_after_decay` | Optimize wave speed after learning rate decay       | `True`       |
 | `second_adjust`             | Adjust locations after training                      | `True`       |
 | `time_before`               | Time difference between the search start and first pick | `0.5 * maximum_search_distance / P_wave_speed` |
-
 ---
 
 ### Notes
@@ -126,9 +125,8 @@ A DataFrame containing seismic station information with the following structure:
     ```
 
 2. **Training Epochs**:
-   - Fixed wave speed models require fewer training epochs. Increasing the number of epochs can help identify more events.
-   - Unknown wave speed models may need more epochs (e.g., 10,000). 
-   - 
+   - Fixed wave speed models require fewer training epochs. Unknown wave speed models may need more epochs.
+   - Usually, for a fast association, we set  `epoch_before_decay`=`epoch_after_decay`=1000. For a detailed association (for more events) we set `epoch_before_decay`=`epoch_after_decay`=10000.  For unknown wave speed models, we set `epoch_before_decay`=`epoch_after_decay`=10000.
 3. **Using Unknown Speed Models**:
    - For unknown speed models, include a `model_traveltime` parameter:
 
