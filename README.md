@@ -126,7 +126,7 @@ A DataFrame containing seismic station information with the following structure:
 
 2. **Training Epochs**:
    - Fixed wave speed models require fewer training epochs. Unknown wave speed models may need more epochs.
-   - Usually, for a fast association, we set  `epoch_before_decay`=`epoch_after_decay`=1000. For a detailed association (for more events) we set `epoch_before_decay`=`epoch_after_decay`=10000.  For unknown wave speed models, we set `epoch_before_decay`=`epoch_after_decay`=10000.
+   - Usually, for a fast association, we set  `epoch_before_decay`=`epoch_after_decay`=1000. For a detailed association (for more events) we set `epoch_before_decay`=`epoch_after_decay`=10000.  For unknown wave speed models, we set `epoch_before_decay`=`epoch_after_decay`=10000. A better early stop strategy will be implemented in the next version. 
 3. **Using Unknown Speed Models**:
    - For unknown speed models, include a `model_traveltime` parameter:
 
