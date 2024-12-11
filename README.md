@@ -134,7 +134,7 @@ A DataFrame containing seismic station information with the following structure:
     pick_df_out, catalog_df = association(pick_df, station_df, config, model_traveltime=model_traveltime)
     ```
 
-   - Here, `model_traveltime` is a model with the source location as input and travel times to each station as output. See the [example](https://colab.research.google.com/drive/1lAciDACeV24vHQFVjWraQE8KOb81ATEd?usp=sharing) for details.
+   - Here, `model_traveltime` is a model with the source location as input and travel times to each station as output. See the [example](https://colab.research.google.com/drive/1tv6hiV4K7HAynv6j0rIkTjMnCFt8uhTF?usp=sharing) for details.
 
 3. **Verbose Settings**:
    - `verbose > 10`: print picks and stations.
