@@ -4,7 +4,7 @@
 
 ## About
 
-This is the source code for paper _HARPA: High-Rate Phase Association with Travel Time Neural Fields_.
+This is the source code for paper _High-Rate Phase Association with Travel Time Neural Fields_.
 
 
 ## Installation 
