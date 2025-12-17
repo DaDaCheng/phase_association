@@ -22,8 +22,6 @@ macOS Sequoia 15.5
 Linux: Ubuntu 16.04
 
 ### Python Dependencies
-`mgcpy` mainly depends on the Python scientific stack.
-
 ```
 numpy
 scipy
