@@ -15,6 +15,31 @@ pip install -q git+https://github.com/DaDaCheng/phase_association.git
 It requires `torch`,`obspy`, `pyproj`, `pandas`, `POT` and `skfmm` (only from unknown wave speed model).
 
 
+## OS Requirements
+This package is supported for macOS and Linux. The package has been tested on the following systems:
+
+macOS Sequoia 15.5
+Linux: Ubuntu 16.04
+
+### Python Dependencies
+`mgcpy` mainly depends on the Python scientific stack.
+
+```
+numpy
+scipy
+numpy
+scikit-learn
+pandas
+seaborn
+tqdm
+ot
+obspy
+torch
+pyproj
+gamma (optional)
+```
+
+
 ## Quick start in SeisBench and colab demo
 
 HARPA seamlessly integrates with workflow in [SeisBench](https://github.com/seisbench/seisbench).
