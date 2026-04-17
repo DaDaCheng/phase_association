@@ -166,7 +166,18 @@ A DataFrame containing seismic station information with the following structure:
    - `verbose > 4`: print configuration details.
    - `verbose > 2`: print other details.
    - `verbose = 0`: silent mode.
+  
+4. **Reference**
 
+For more details and instructions on reproducing the results, please refer to our manuscript and the supplementary information:
+
+```bibtex
+@article{shi2023high,
+  title={High-Rate Phase Association with Travel Time Neural Fields},
+  author={Shi, Cheng and de Hoop, Maarten V and Dokmani{\'c}, Ivan},
+  journal={arXiv preprint arXiv:2307.07572},
+  year={2023}
+}
 
 
 
