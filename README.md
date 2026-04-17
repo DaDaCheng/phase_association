@@ -166,8 +166,6 @@ A DataFrame containing seismic station information with the following structure:
    - `verbose > 4`: print configuration details.
    - `verbose > 2`: print other details.
    - `verbose = 0`: silent mode.
-  
-4. **Reference**
 
 4. **Reference**
 
