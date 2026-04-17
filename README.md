@@ -169,17 +169,16 @@ A DataFrame containing seismic station information with the following structure:
   
 4. **Reference**
 
-For more details and instructions on reproducing the results, please refer to our manuscript and the supplementary information:
+4. **Reference**
+
+For further details and instructions on reproducing the results, please refer to our manuscript and supplementary information:
 
 ```bibtex
 @article{shi2023high,
   title={High-Rate Phase Association with Travel Time Neural Fields},
-  author={Shi, Cheng and de Hoop, Maarten V and Dokmani{\'c}, Ivan},
-  journal={arXiv preprint arXiv:2307.07572},
+  author={Shi, Cheng and Poggiali, Giulio and Marone, Chris and de Hoop, Maarten V and Dokmani{\'c}, Ivan},
+  journal={arXiv e-prints},
+  pages={arXiv--2307},
   year={2023}
 }
-
-
-
-
---- 
+```
